@@ -1,16 +1,19 @@
 const reservas = [
     {
         tipoHabitacion: "standard",
+        desayuno: false,
         pax: 1,
         noches: 3
     },
     {
         tipoHabitacion: "standard",
+        desayuno: false,
         pax: 1,
         noches: 4
     },
     {
         tipoHabitacion: "suite",
+        desayuno: true,
         pax: 2,
         noches: 1
     }
@@ -149,7 +152,7 @@ class CalcularCosteCliente extends CalcularCoste {
 }
 
 const claseCliente = new CalcularCosteCliente();
-claseCliente.calcularSubtotal(reservas, "standard");
+claseCliente.calcularSubtotal(reservas);
 console.log("Subtotal ClaseSeparadaCliente", claseCliente.getSubtotal());
 console.log("Total ClaseSepClaseSeparadaClientearada + IVA", claseCliente.getTotal());
 
@@ -175,5 +178,82 @@ console.log("Total ClaseSeparadaTourOperador + IVA", claseTour.getTotal());
 
 //////////////////////////////////EJERCICIO ADICIONAL//////////////////////////////////
 console.log("/////////////EJERCICIO ADICIONAL/////////////")
+
+class CalcularReservaDesayuno {
+    constructor() {
+        this._subtotal = 0;
+    }
+
+    suplAdicional(client) {
+        return (client > 1 ? --client * 40 : 0);
+    }
+
+    calcDesayuno = (desayuno, paX, noche) => desayuno ? 15 * paX * noche : 0;
+
+    calcTipoHab(tipo) {
+        switch (tipo) {
+            case "standard":
+                return 100;
+            case "suite":
+                return 150;
+        }
+    }
+
+    calcularSubtotalDesayuno(arr) {
+        this._subtotal = arr.reduce((acc,
+            { noches, pax, tipoHabitacion, desayuno }) =>
+            acc + this.calcDesayuno(desayuno, pax, noches) + this.suplAdicional(pax) + (this.calcTipoHab(tipoHabitacion) * noches), 0);
+    }
+
+    getSubtotal() {
+        return this._subtotal;
+    }
+
+    getTotal() {
+        return this._subtotal + (this._subtotal * 21 / 100);
+    }
+
+}
+
+
+const calcularSuperDesayuno = new CalcularReservaDesayuno();
+calcularSuperDesayuno.calcularSubtotalDesayuno(reservas);
+console.log("Subtotal Cliente", calcularSuperDesayuno.getSubtotal());
+console.log("Total Cliente + IVA", calcularSuperDesayuno.getTotal());
+
+class CalcularReservaTourOperadorDesayuno extends CalcularReservaDesayuno {
+    constructor() {
+        super(CalcularReservaDesayuno);
+    }
+
+    calcularSubtotalDesayuno(arr) {
+        super.calcularSubtotalDesayuno(arr);
+        this._subtotal = arr.reduce((acc,
+            { noches, pax, tipoHabitacion, desayuno }) =>
+            acc + this.calcDesayuno(desayuno, pax, noches) + this.suplAdicional(pax) + (100 * noches), 0);
+    }
+
+    getDiscount(price) {
+        return price - (price * 15 / 100)
+    }
+
+    getTotal() {
+        super.getTotal();
+        return this.getDiscount(this._subtotal) + this.getDiscount(this._subtotal) * 21 / 100;
+    }
+
+
+}
+
+const calcularTourDesayuno = new CalcularReservaTourOperadorDesayuno();
+calcularTourDesayuno.calcularSubtotalDesayuno(reservas);
+console.log("Subtotal TourOperador", calcularTourDesayuno.getSubtotal());
+console.log("Total TourOperador + IVA", calcularTourDesayuno.getTotal());
+
+
+
+
+
+
 
 
